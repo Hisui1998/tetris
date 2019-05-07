@@ -13,7 +13,7 @@ Title::~Title()
 int Title::Init()
 {
 	Titleimg = LoadGraph("image/Title.png",true);
-	Key[1] = 1;
+	Key[0]=Key[1] = 1;
 	return 0;
 }
 

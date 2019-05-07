@@ -21,7 +21,7 @@ int ResultScene::Init()
 		{
 			if (!gb->PutCheck(VECTOR2(x, y)))
 			{
-				buff.push_back({ MakeGraph(BlockSize, BlockSize), VECTOR2(x, y),VECTOR2(GetRand(100)-50,GetRand(100)) });
+				buff.push_back({ MakeGraph(BlockSize, BlockSize), VECTOR2(x, y),VECTOR2((GetRand(2)-1),-GetRand(10)) });
 			}
 		}
 	}
@@ -30,7 +30,7 @@ int ResultScene::Init()
 	y = 20;
 	isEnd = false;
 	isContinue = false;
-	Key[1] = 1;
+	Key[0] = 0;
 	lrKey[0][0] = lrKey[1][0] = 0;
 	return 0;
 }
@@ -86,9 +86,9 @@ Scene ResultScene::UpDate(Scene & _this)
 	{
 		for (auto &img : buff)
 		{
-			DrawGraph(BoardOffset.x + BlockSize * img.pos.x, BoardOffset.y + BlockSize * img.pos.y, img.buff, true);
-			img.pos += img.vec/20;
-			img.vec.y++;
+			DrawGraphF(BoardOffset.x + BlockSize * img.pos.x, BoardOffset.y + BlockSize * img.pos.y, img.buff, true);
+			img.pos += img.vec;
+			img.vec.y+=1;
 		}
 		if ((lrKey[0][1] & ~lrKey[0][0]) == 1)
 		{
@@ -98,18 +98,18 @@ Scene ResultScene::UpDate(Scene & _this)
 		{
 			isContinue = true;
 		}
-		auto fontsize = isContinue ? 64 : 32;
-		DrawString(300 - 5 * 32, 400 - 64, "Continue?", 0xffffff);
-		DxLib::SetFontSize(fontsize);
-		DrawString(300 - 3 * fontsize, 400 + 64, "YES", 0xffffff);
-		fontsize = isContinue ? 32 : 64;
-		DxLib::SetFontSize(fontsize);
-		DrawString(300 + 2 * fontsize, 400 + 64, "NO", 0xffffff);
+		Cnt++;
+		int fontsize;
+		DrawString(BoardOffset.x + (BlockSize*BoardSize.x) / 2-32*5, BoardOffset.y + (BlockSize*(BoardSize.x)) / 2, "Continue?", 0xffffff);
+		DxLib::SetFontSize(fontsize = isContinue ? (64 + abs(Cnt /2 % 20 - 10)) : 32);
+		DrawString(BoardOffset.x + (BlockSize*BoardSize.x) / 2 - 3 * fontsize, BoardOffset.y + (BlockSize*BoardSize.x) / 2 + 64*2, "YES", isContinue ? 0xff99ff : 0xffffff);
+		DxLib::SetFontSize(fontsize = !isContinue ? (64 + abs(Cnt /2 % 20 - 10)) : 32);
+		DrawString(BoardOffset.x + (BlockSize*BoardSize.x) / 2 + 1 * fontsize, BoardOffset.y + (BlockSize*BoardSize.x) / 2 + 64*2, "NO", isContinue?0xffffff:0xff99ff);
 	}
 	else
 	{
 		FontChanger("Comic Sans MS", 64, true);
-		DrawString(300 - 5 * 32, 400 - 64 * 2, "Game Over", 0xffffff);
+		DrawString(BoardOffset.x+(BlockSize*BoardSize.x)/2 - 32 * 5, BoardOffset.y+ (BlockSize*BoardSize.x) / 2, "Game Over", 0xffffff);
 	}
 
 	FontChanger();
@@ -121,7 +121,8 @@ void ResultScene::ChangeBlock(bool isEnd)
 {
 	if (isEnd)
 	{
-		gb = std::make_unique<GameBoard>();
+		int score = gb->GetScore();
+		gb = std::make_unique<GameBoard>(score);
 	}
 	else if (((++Cnt / 5) % 2) && (y))
 	{

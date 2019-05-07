@@ -8,8 +8,10 @@
 struct Spark
 {
 	int light;
-	VECTOR2 pos;
-	VECTOR2 v;
+	float x;
+	float y;
+	float vx;
+	float vy;
 };
 
 class Particle
@@ -21,7 +23,7 @@ public:
 	}
 
 	void Create(VECTOR2 pos, int rand);
-	void Draw(bool isGravity = false, int Color = -1);
+	void Draw(bool isGravity = false, int Color = -1, bool isCircle = false);
 
 private:
 

@@ -7,8 +7,10 @@ Particle::Particle()
 {
 	for (int i = 0; i < MAX_SPARK; i++)
 	{
-		spark[i].pos = 0;
-		spark[i].v = { 0,0 };
+		spark[i].x = 0;
+		spark[i].y = 0;
+		spark[i].vx = 0;
+		spark[i].vy = 0;
 		spark[i].light = 0;
 	}
 }
@@ -32,11 +34,14 @@ void Particle::Create(VECTOR2 pos,int rand)
 		}
 		if (i != MAX_SPARK)
 		{
-			spark[i].pos = 0;
-			spark[i].v = { 0,0 };
-			spark[i].light=0;
-			spark[i].pos = pos * 50;
-			(i%2?spark[i].v.x: spark[i].v.y)= GetRand(1000) - 500;
+			spark[i].x = 0;
+			spark[i].y = 0;
+			spark[i].vx = 0;
+			spark[i].vy = 0;
+			spark[i].light = 0;
+			spark[i].x = pos.x * 50;
+			spark[i].y = pos.y * 50;
+			(i%2?spark[i].vx: spark[i].vy)= GetRand(1000) - 500;
 			spark[i].light = 0xff;
 		}
 	}
@@ -55,22 +60,26 @@ void Particle::Move(bool isGravity)
 		}
 		//spark[i].v.y += isGravity ? GetRand(10) : 0;
 
-		spark[i].pos += spark[i].v;
+		spark[i].x += spark[i].vx;
+		spark[i].y += spark[i].vy;
 
 		spark[i].light -= 5;
 	}
 
 }
 
-void Particle::Draw(bool isGravity,int Color)
+void Particle::Draw(bool isGravity,int Color,bool isCircle)
 {
 	Move(isGravity);
 	for (int j = 0; j < MAX_SPARK; j++)
 	{
 		if (spark[j].light>0)
 		{
-			DrawBox(spark[j].pos.x/50-16, spark[j].pos.y/50-16, spark[j].pos.x / 50+16, spark[j].pos.y / 50+16,
-				(Color==-1)?GetColor(spark[j].light, 0, 0): spark[j].light*Color/255,false);
+			isCircle ?
+				DrawCircle(spark[j].x / 50 - 16, spark[j].y / 50 - 16, spark[j].light / 32,
+				(Color == -1) ? GetColor(0, 0, spark[j].light) : spark[j].light*Color / 255, false) :
+				DrawBox(spark[j].x / 50 - 16, spark[j].y / 50 - 16, spark[j].x / 50 + 16, spark[j].y / 50 + 16,
+				(Color == -1) ? GetColor(0, 0, spark[j].light) : spark[j].light*Color / 255, false);
 		}
 	}
 }

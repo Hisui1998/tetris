@@ -16,6 +16,7 @@ Player::Player(std::weak_ptr<GameBoard> gb)
 	this->gb = gb.lock();
 	NextMino = MinoSelect();
 	ReSet();
+	SE_mem = DxLib::LoadSoundMem("SE/Rota.mp3");
 	HoldUse = false;
 }
 
@@ -85,7 +86,7 @@ Scene Player::UpDate(Scene & _this)
 
 void Player::Draw()
 {
-	lpParticle.Draw(false,0xffffff);
+	lpParticle.Draw(false,0xffffff,true);
 	auto PhantomCnt = 0;
 	for (auto block : Mino)
 	{
@@ -159,6 +160,10 @@ void Player::KeyUpDate()
 
 void Player::Move()
 {
+	auto playse = [&SE_mem=SE_mem]() {
+		DxLib::ChangeVolumeSoundMem(96, SE_mem);
+		DxLib::PlaySoundMem(SE_mem, DX_PLAYTYPE_LOOP);
+	};
 	KeyUpDate();
 
 	if ((Key[(int)Button::right] & (~OldKey[(int)Button::right])) == 1)
@@ -250,6 +255,7 @@ void Player::Move()
 	}
 	if ((Key[(int)Button::shift] & (~OldKey[(int)Button::shift])) == 1)
 	{
+		playse();
 		Rotation();
 	}
 	if (((Key[(int)Button::H] & (~OldKey[(int)Button::H])) == 1)&& !HoldUse)

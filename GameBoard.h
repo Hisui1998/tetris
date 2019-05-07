@@ -18,7 +18,7 @@ struct MinoData {
 class GameBoard
 {
 public:
-	GameBoard();
+	GameBoard(int Score=0);
 	~GameBoard();
 	void Draw();
 	void UpDate();
@@ -26,6 +26,7 @@ public:
 	bool PutCheck(VECTOR2 pos);
 	void WriteData(VECTOR2 pos, int color);
 	int GetDownCnt(){ return DownWait; };
+	int GetScore();
 
 private:
 	void Init();

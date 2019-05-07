@@ -7,8 +7,9 @@ constexpr int FontSize = 24;
 constexpr int BlockCnt = 4;
 constexpr int Second = 60;
 
-GameBoard::GameBoard()
+GameBoard::GameBoard(int Score)
 {
+	this->Score = Score;
 	Init();
 }
 
@@ -29,7 +30,6 @@ void GameBoard::Init()
 		{
 			Board[y][x].flag = false;
 		}
-		Board[3][0].flag = false;
 	}
 	DxLib::LoadDivGraph("image/blocks.png",8,8,1, BlockSize, BlockSize, blockimg,true);
 }
@@ -165,10 +165,10 @@ void GameBoard::Draw()
 			}
 		}
 	}
-	if ((--DrawWait > 0) && ((DrawWait / 10) % 2))
+	if ((--DrawWait > 0) && ((DrawWait / 15) % 2))
 	{
-		DxLib::SetFontSize(FontSize * 2);
-		DxLib::DrawString(BoardOffset.x + (BlockSize * (BoardSize.x) + 12 * FontSize*2) / 2, (BlockSize * (BoardSize.y) + FontSize / 2) / 2,
+		DxLib::SetFontSize(FontSize*2);
+		DxLib::DrawString(BoardOffset.x + BlockSize/2, BoardOffset.y + (BlockSize * BoardSize.x)/ 2,
 			"T E T R I S", 0xffaaaa, 0xffffff);
 	}
 	FontChanger();
@@ -210,4 +210,9 @@ void GameBoard::WriteData(VECTOR2 pos,int color)
 			}
 		}
 	}
+}
+
+int GameBoard::GetScore()
+{
+	return Score;
 }

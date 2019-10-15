@@ -21,10 +21,11 @@ int ResultScene::Init()
 		{
 			if (!gb->PutCheck(VECTOR2(x, y)))
 			{
-				buff.push_back({ MakeGraph(BlockSize, BlockSize), VECTOR2(x, y),VECTOR2(GetRand(100)-50,GetRand(100)) });
+				imgvec.push_back({ MakeGraph(BlockSize, BlockSize), VECTOR2(x, y),VECTOR2(GetRand(100)-50,GetRand(100)) });
 			}
 		}
 	}
+	frame = 0;
 	Cnt = 1;
 	buffnum = 0;
 	y = 20;
@@ -42,7 +43,7 @@ Scene ResultScene::UpDate(Scene & _this)
 		DxLib::SetFontSize(Fontsize);
 		isAntialiasing ? DxLib::ChangeFontType(DX_FONTTYPE_ANTIALIASING_EDGE) : DxLib::ChangeFontType(DX_FONTTYPE_NORMAL);
 	};
-
+	++frame;
 	Key[1] = Key[0];
 	lrKey[0][1] = lrKey[0][0];
 	lrKey[1][1] = lrKey[1][0];
@@ -63,14 +64,12 @@ Scene ResultScene::UpDate(Scene & _this)
 		{
 			isEnd = true;
 			Cnt = 2;
-			for (auto img:buff)
+			for (auto img:imgvec)
 			{
 				GetDrawScreenGraph(BoardOffset.x + BlockSize * img.pos.x, BoardOffset.y + BlockSize * img.pos.y,
 					BoardOffset.x + BlockSize * img.pos.x + BlockSize, BoardOffset.y + BlockSize * img.pos.y + BlockSize, img.buff, true);
-			}
-			
+			}			
 			buffnum = 0;
-			//return std::make_unique<Title>();
 		}
 		else
 		{
@@ -84,7 +83,7 @@ Scene ResultScene::UpDate(Scene & _this)
 	}
 	if (isEnd)
 	{
-		for (auto &img : buff)
+		for (auto &img : imgvec)
 		{
 			DrawGraph(BoardOffset.x + BlockSize * img.pos.x, BoardOffset.y + BlockSize * img.pos.y, img.buff, true);
 			img.pos += img.vec/20;
@@ -110,6 +109,11 @@ Scene ResultScene::UpDate(Scene & _this)
 	{
 		FontChanger("Comic Sans MS", 64, true);
 		DrawString(300 - 5 * 32, 400 - 64 * 2, "Game Over", 0xffffff);
+		FontChanger("Comic Sans MS", 32, true);
+		if ((frame / 30) % 2)
+		{
+			DrawString(300 - 16 * 16, 400, "Press enter to break the blocks", 0xffffff);
+		}
 	}
 
 	FontChanger();

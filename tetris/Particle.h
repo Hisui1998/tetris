@@ -15,6 +15,7 @@ struct pInfo
 	VECTOR2 v;
 };
 
+// パーティクルクラス(エミッター)
 class Particle
 {
 public:
@@ -23,8 +24,8 @@ public:
 		return *s_Instance;
 	}
 
-	void Create(VECTOR2 pos, int rand);
-	void Draw(int Color = -1);
+	void Create(VECTOR2 pos, int rand);// 寿命と速度を付与する関数
+	void Draw(int Color = -1);// 描画関数
 
 private:
 
@@ -38,8 +39,10 @@ private:
 	};
 	static std::unique_ptr<Particle, Particle_deleter> s_Instance;
 
+	// 移動関数
 	void Move();
 
+	// パーティクルの配列
 	std::vector<pInfo> particle;
 };
 

@@ -6,8 +6,10 @@
 class VECTOR2;
 class SceneState;
 
+// ゲームタスクインスタンスの省略
 #define lpGameTask GameTask::GetInstance()
 
+// ゲームタスククラス(ゲームループ関係を処理している)
 class GameTask
 {
 public:
@@ -18,7 +20,7 @@ public:
 
 	// public関数
 	void Run(void);
-	VECTOR2 GetScreenSize(void);
+	VECTOR2 GetScreenSize(void);// ウィンドウサイズを取得する
 private:
 	// Singleton
 	GameTask();
@@ -31,10 +33,8 @@ private:
 	};
 	static std::unique_ptr<GameTask,gametask_deleter> s_Instance;
 
+	// シーン遷移用のポインタ
 	std::unique_ptr<SceneState> ActiveScene;
 
-	// SystemInitialize
 	int SysInit(void);
-	// 変数
-
 };

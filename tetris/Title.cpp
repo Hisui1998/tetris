@@ -26,7 +26,6 @@ Scene Title::UpDate(Scene & _this)
 	char str[] = "Press enter to play the game !!";
 	Key[1] = Key[0];
 	Key[0] = CheckHitKey(KEY_INPUT_RETURN);
-	//DrawString(0,0,"Title",0xffffff);
 	DrawGraph(0,0,Titleimg,true);
 	if ((Key[0] & ~Key[1])==1)
 	{

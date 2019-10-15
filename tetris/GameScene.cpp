@@ -10,14 +10,14 @@ GameScene::GameScene()
 
 GameScene::~GameScene()
 {
-	StopMusic();
+	StopSoundMem(BGM_mem);
 }
 
 int GameScene::Init()
 {
-	DxLib::PlayMusic("BGM/BGM.mp3", DX_PLAYTYPE_LOOP);
-	Key[0] = 0;
-	Key[1] = 0;
+	BGM_mem = DxLib::LoadSoundMem("BGM/BGM.mp3");
+	DxLib::ChangeVolumeSoundMem(96, BGM_mem);
+	DxLib::PlaySoundMem(BGM_mem, DX_PLAYTYPE_LOOP);
 	gameboard = std::make_shared<GameBoard>();
 	player = std::make_shared<Player>(gameboard);
 
@@ -27,7 +27,7 @@ int GameScene::Init()
 
 Scene GameScene::UpDate(Scene & _this)
 {
-	DrawString(0, 0, "Game", 0xffffff);
+	DrawString(0, 0, "Game  Shiftキー：回転　　左右キー：移動\n    　上キー：ハードドロップ　　下キー：ソフトドロップ\n    　Hキー：ホールド", 0xffffff);
 	gameboard->Draw();
 	player->Draw();
 	gameboard->UpDate();

@@ -56,18 +56,7 @@ bool VECTOR2::operator==(const VECTOR2 & vec) const
 
 bool VECTOR2::operator!=(const VECTOR2 & vec) const
 {
-	// !((this->x == vec.x) && (this->y == vec.y));
 	return (this->x != vec.x) || (this->y != vec.y);
-}
-
-bool VECTOR2::operator<=(const VECTOR2 & vec) const
-{
-	return (this->x <= vec.x) && (this->y <= vec.y);
-}
-
-bool VECTOR2::operator<(const VECTOR2 & vec) const
-{
-	return (this->x < vec.x) && (this->y < vec.y);
 }
 
 //単項演算子
@@ -110,27 +99,26 @@ VECTOR2 VECTOR2::operator-() const
 }
 
 // ベクトルとベクトルの演算
-// VECTOR2+VECTOR2
 VECTOR2 operator+(const VECTOR2& vec1, const VECTOR2& vec2)
 {
 	return VECTOR2(vec1.x+vec2.x,vec1.y+vec2.y);
 }
-// VECTOR2-VECTOR2
+
 VECTOR2 operator-(const VECTOR2 & vec1, const VECTOR2 & vec2)
 {
 	return VECTOR2(vec1.x - vec2.x, vec1.y - vec2.y);
 }
-// VECTOR2*int
+
 VECTOR2 operator*(const VECTOR2 & vec, int i)
 {
 	return VECTOR2(vec.x * i, vec.y * i);
 }
-// int*VECTOR2
+
 VECTOR2 operator*(int i, const VECTOR2 & vec)
 {
 	return VECTOR2( i * vec.x, i * vec.y);
 }
-// VECTOR2/int
+
 VECTOR2 operator/(const VECTOR2 & vec, int i)
 {
 	return VECTOR2(vec.x / i, vec.y / i);

@@ -1,4 +1,6 @@
 #pragma once
+
+// 二次元構造体
 class VECTOR2
 {
 public:
@@ -20,9 +22,6 @@ public:
 	//比較演算子
 	bool operator==(const VECTOR2& vec) const;
 	bool operator!=(const VECTOR2& vec) const;
-	bool operator<=(const VECTOR2 & vec) const;
-	bool operator<(const VECTOR2 & vec) const;
-
 
 	//単項演算子
 	VECTOR2& operator+=(const VECTOR2& vec);

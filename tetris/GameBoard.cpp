@@ -3,6 +3,9 @@
 #include <DxLib.h>
 #include <vector>
 
+constexpr int FontSize = 24;
+constexpr int BlockCnt = 4;
+constexpr int Second = 60;
 
 GameBoard::GameBoard()
 {
@@ -16,7 +19,10 @@ GameBoard::~GameBoard()
 
 void GameBoard::Init()
 {
+	Score = 0;
 	DownWait = 0;
+	DrawWait = 0;
+	Create = 0;
 	for (auto y = 0; y < BoardSize.y; y++)
 	{
 		for (auto x = 0; x < BoardSize.x; x++)
@@ -25,7 +31,6 @@ void GameBoard::Init()
 		}
 		Board[3][0].flag = false;
 	}
-	particle = std::make_unique<Particle>();
 	DxLib::LoadDivGraph("image/blocks.png",8,8,1, BlockSize, BlockSize, blockimg,true);
 }
 
@@ -95,9 +100,15 @@ bool GameBoard::LineClean()
 			{
 				for (auto x = 0; x < BoardSize.x; x++)
 				{
-					particle->Create(VECTOR2(x, dl)*BlockSize + offset + BlockSize / 2, 300);
+					lpParticle.Create(VECTOR2(x, dl)*BlockSize + BoardOffset + BlockSize / 2, 300);
 					Board[dl][x].flag = false;
 				}
+				Score += 1000;
+			}
+			if (DelLines.size() == BlockCnt)
+			{
+				DrawWait = Second;
+				Score += 10000;
 			}
 		}
 	}
@@ -112,15 +123,32 @@ bool GameBoard::LineClean()
 		}
 		DownWait = 0;
 	}
-
-
 	return true;
 }
 
 void GameBoard::Draw()
 {
-	DxLib::DrawBox(offset.x- BlockSize, offset.y - BlockSize, offset.x+BlockSize*(BoardSize.x + 1), offset.y+BlockSize*(BoardSize.y + 1), 0xcccccc, true);
-	DxLib::DrawBox(offset.x, offset.y, offset.x+BlockSize*(BoardSize.x), offset.y+BlockSize*(BoardSize.y),0,true);
+	auto FontChanger = [](const char Fontname[] = "",const int Fontsize = 16,bool isAntialiasing=false) {
+		DxLib::ChangeFont(Fontname);
+		DxLib::SetFontSize(Fontsize);
+		isAntialiasing ? DxLib::ChangeFontType(DX_FONTTYPE_ANTIALIASING_EDGE): DxLib::ChangeFontType(DX_FONTTYPE_NORMAL);
+	};
+	DxLib::DrawBox(BoardOffset.x- BlockSize, BoardOffset.y - BlockSize, BoardOffset.x+BlockSize*(BoardSize.x + 1), BoardOffset.y+BlockSize*(BoardSize.y + 1), 0xaaccaa, true);
+	DxLib::DrawBox(BoardOffset.x, BoardOffset.y, BoardOffset.x+BlockSize*(BoardSize.x), BoardOffset.y+BlockSize*(BoardSize.y),0,true);
+	DxLib::DrawBox(NextOffset.x - LineSize, NextOffset.y - LineSize, NextOffset.x+ BlockSize*4+ LineSize, NextOffset.y + BlockSize * 3+ LineSize,0xffcccc,true);
+	DxLib::DrawBox(NextOffset.x, NextOffset.y, NextOffset.x + BlockSize * 4, NextOffset.y + BlockSize * 3, 0, true);
+	DxLib::DrawBox(HoldOffset.x - LineSize, HoldOffset.y - LineSize, HoldOffset.x + BlockSize * 4 + LineSize, HoldOffset.y + BlockSize * 3 + LineSize, 0xffccff, true);
+	DxLib::DrawBox(HoldOffset.x, HoldOffset.y, HoldOffset.x + BlockSize * 4, HoldOffset.y + BlockSize * 3, 0, true);
+
+	lpParticle.Draw();
+	FontChanger("Comic Sans MS", FontSize,true);
+	DxLib::DrawString(NextOffset.x - LineSize, NextOffset.y - BlockSize- LineSize, "NextBlock", 0xaaaaff, 0xffffff);
+	DxLib::DrawString(HoldOffset.x - LineSize, HoldOffset.y - BlockSize - LineSize, "HoldBlock", 0xaaffff);
+	DxLib::DrawString(HoldOffset.x, HoldOffset.y+ BoardOffset.y+LineSize, "Score", 0xaaffff, 0xffffff);
+	DrawFormatString(HoldOffset.x, HoldOffset.y + BoardOffset.y + LineSize+FontSize, 0xaaffff,"%d",Score);
+	
+
+
 	// ÉuÉçÉbÉNÇ™Ç†ÇÈÇ∆Ç±ÇÎÇ…ï`âÊÇÇ∑ÇÈ
 	for (auto y = 0; y < BoardSize.y; y++)
 	{
@@ -128,16 +156,22 @@ void GameBoard::Draw()
 		{
 			if (Board[y][x].flag)
 			{
-				if (Board[y][x].deflag)
+				if ((Board[y][x].deflag)&& ((DownWait/5)%2))
 				{
 					DxLib::SetDrawBlendMode(DX_BLENDMODE_ALPHA, 64);
 				}
-				DxLib::DrawGraph(offset.x+x*BlockSize, offset.y+y*BlockSize, blockimg[Board[y][x].color],true);
+				DxLib::DrawGraph(BoardOffset.x+x*BlockSize, BoardOffset.y+y*BlockSize, blockimg[Board[y][x].color],true);
 				DxLib::SetDrawBlendMode(DX_BLENDMODE_ALPHA, 255);
 			}
 		}
 	}
-	particle->Draw();
+	if ((--DrawWait > 0) && ((DrawWait / 10) % 2))
+	{
+		DxLib::SetFontSize(FontSize * 2);
+		DxLib::DrawString(BoardOffset.x + (BlockSize * (BoardSize.x) - 6 * FontSize*2) / 2, (BlockSize * (BoardSize.y) + FontSize / 2) / 2,
+			"T E T R I S", 0xffaaaa, 0xffffff);
+	}
+	FontChanger();
 }
 
 void GameBoard::UpDate()
@@ -172,7 +206,7 @@ void GameBoard::WriteData(VECTOR2 pos,int color)
 		{
 			if (Board[pos.y][pos.x].color == 7)
 			{
-				particle->Create(VECTOR2(pos.x, pos.y)*BlockSize + offset + BlockSize / 2, 1);
+				lpParticle.Create(VECTOR2(pos.x, pos.y)*BlockSize + BoardOffset + BlockSize / 2, (++Create/30)%2);
 			}
 		}
 	}

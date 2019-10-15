@@ -1,6 +1,7 @@
 #pragma once
 #include "SceneState.h"
 
+// タイトルシーン
 class Title :
 	public SceneState
 {
@@ -12,5 +13,6 @@ public:
 	Scene UpDate(Scene & _this);
 private:
 	int Titleimg;
+	int cnt;
 };
 

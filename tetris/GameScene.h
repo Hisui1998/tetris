@@ -18,6 +18,6 @@ private:
 
 	VECTOR2 boardSize;
 	bool isResult;
-
+	int BGM_mem;
 };
 

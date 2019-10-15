@@ -1,13 +1,25 @@
 #include "Particle.h"
 #include <DxLib.h>
+#include <amp.h>
 
+std::unique_ptr<Particle, Particle::Particle_deleter> Particle::s_Instance(new Particle());
 
-Particle::Particle():MAX_SPARK(8000)
+// 寿命の減る速度
+constexpr int lifeSpeed = 5;
+
+// 計算倍率
+constexpr int magnification = 50;
+
+// ブロックの大きさ
+constexpr int blockSize = 32;
+
+Particle::Particle()
 {
-	for (int i = 0; i < MAX_SPARK; i++)
+	// パーティクル配列の初期化
+	particle.resize(MAX_SPARK);
+	for (auto& p :particle)
 	{
-		spark[i].isUsed = false;
-		spark[i].v = { 0,0 };
+		p = {0,0,0};
 	}
 }
 
@@ -16,77 +28,58 @@ Particle::~Particle()
 {
 }
 
-
-void Particle::Init()
-{
-	Element e;
-	e.isUsed = false;
-	e.light = 0;
-	e.pos = { 0,0 };
-	e.v = { 0,0 };
-
-	for (int cnt = 0;cnt<)
-	{
-
-	}
-}
-
 void Particle::Create(VECTOR2 pos,int rand)
 {
+	// ランダムで一回の生成数を取得
 	for (int r = 0 ;r < GetRand(rand);r++)
 	{
-		int i;
-		for (i = 0; i < MAX_SPARK; i++)
+		for (int i = 0;i<particle.size();++i)
 		{
-			if (!spark[i].isUsed)
+			// 死亡状態のパーティクルを検索する
+			if (particle[i].lifeSpan > 0)
 			{
-				break;
+				continue;
 			}
-		}
-		if (i != MAX_SPARK)
-		{
-			spark[i].pos = pos*32;
-			(GetRand(2)?spark[i].v.x: spark[i].v.y)= GetRand(500) - 250;
-			spark[i].light = 0xff;
-			spark[i].isUsed = true;
+
+			// 寿命と速度を付与する
+			particle[i].pos = pos * magnification;
+			(i % 2 ? particle[i].v.x : particle[i].v.y) = (GetRand(20) - 10)*magnification;
+			particle[i].lifeSpan = 0xff;
+			break;
 		}
 	}
 }
 
-void Particle::Move(bool isGravity)
+void Particle::Move()
 {
-	int i;
-
-	// 火花の移動処理
-	for (i = 0; i < MAX_SPARK; i++)
+	// パーティクルの移動処理
+	for (auto& p : particle)
 	{
-		if (!spark[i].isUsed)
+		if (p.lifeSpan <= 0)
 		{
+			p = { 0,0,0 };
 			continue;
 		}
-		//spark[i].v.y += isGravity ? GetRand(10) : 0;
 
-		spark[i].pos.x += spark[i].v.x;
-		spark[i].pos.y += spark[i].v.y;
-
-		spark[i].light -= 3;
-
-		if (spark[i].light < 0)
-		{
-			spark[i].isUsed = false;
-		}
+		// 移動させた後、寿命を減らす
+		p.pos += p.v;
+		p.lifeSpan -= lifeSpeed;
 	}
 }
 
-void Particle::Draw(bool isGravity)
+void Particle::Draw(int Color)
 {
-	Move(isGravity);
-	for (int j = 0; j < MAX_SPARK; j++)
+	// 座標移動を行う
+	Move();
+
+	// 描画実行部
+	for (auto& p : particle)
 	{
-		if (spark[j].isUsed == 1)
+		if (p.lifeSpan > 0)
 		{
-			DrawPixel(spark[j].pos.x/32, spark[j].pos.y/32,
-				GetColor(spark[j].light/2, spark[j].light, spark[j].light));
+			DrawBox(p.pos.x / magnification - blockSize/2, p.pos.y / magnification - blockSize/2,
+					p.pos.x / magnification + blockSize/2, p.pos.y / magnification + blockSize/2,
+				(Color == -1) ? GetColor(p.lifeSpan, 0, 0) : GetColor(p.lifeSpan/0xffff*Color, (p.lifeSpan / 0xff)% 0xffff * Color, p.lifeSpan%0xff * Color), false);
 		}
 	}
 }

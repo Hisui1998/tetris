@@ -5,24 +5,18 @@
 #include <random>
 
 const int blockCnt = 4;
+const VECTOR2 offSet = {9 ,0};
+const VECTOR2 HoldoffSet = { 9 ,8 };
 
 Player::Player(std::weak_ptr<GameBoard> gb)
 {
-	paeticle = std::make_unique<Particle>();
 	NowBlock = -1;
 	DxLib::LoadDivGraph("image/blocks.png", 8, 8, 1, BlockSize, BlockSize, blockimg, true);
 	WaitCnt = 0;
 	this->gb = gb.lock();
 	NextMino = MinoSelect();
-	for (auto block : NextMino)
-	{
-		block->AddPos(VECTOR2(12, 0));
-	}
-	Mino = MinoSelect(false);
-	for (auto block : Mino)
-	{
-		block->AddPos(VECTOR2(3, 0));
-	}
+	ReSet();
+	HoldUse = false;
 }
 
 Player::~Player()
@@ -63,6 +57,7 @@ Scene Player::UpDate(Scene & _this)
 					{
 						gb->WriteData(block->GetPos(), NowBlock);
 					}
+					HoldUse = false;
 				}
 				if (flag)
 				{
@@ -83,25 +78,49 @@ Scene Player::UpDate(Scene & _this)
 	Move();
 	for (auto block : Mino)
 	{
-		(*paeticle).Create(block->GetPos()*BlockSize+offset+ BlockSize/2,1);
+		lpParticle.Create(block->GetPos()*BlockSize+BoardOffset+ BlockSize/2,1);
 	}
 	return  rtnptr;
 }
 
 void Player::Draw()
 {
-	paeticle->Draw(true);
+	lpParticle.Draw(0xff00ff);
+	auto PhantomCnt = 0;
 	for (auto block : Mino)
 	{
-		DrawGraph(block->GetPos()*BlockSize+offset, blockimg[NowBlock],true);
+		DrawGraph(block->GetPos()*BlockSize+BoardOffset, blockimg[NowBlock],true); 
+		for (;;)
+		{
+			auto ismove = -4;
+			for (auto block : Mino)
+			{
+				if ((gb->PutCheck(block->GetPos() + VECTOR2(0, 1)* PhantomCnt)))
+				{
+					ismove++;
+				}
+			}
+			if (ismove)
+			{
+				PhantomCnt--;
+				break;
+			}
+			else
+			{
+				PhantomCnt++;
+			}
+		}
+		DxLib::SetDrawBlendMode(DX_BLENDMODE_ALPHA, 0x60);
+		DrawGraph((block->GetPos()+VECTOR2(0,1)* PhantomCnt)* BlockSize + BoardOffset, blockimg[NowBlock], true);
+		DxLib::SetDrawBlendMode(DX_BLENDMODE_ALPHA, 0xff);
 	}
 	for (auto block : NextMino)
 	{
-		DrawGraph(block->GetPos()*BlockSize + offset, blockimg[NextBlock], true);
+		DrawGraph((block->GetPos()+ offSet)*BlockSize + BoardOffset, blockimg[NextBlock], true);
 	}
 	for (auto block : HoldMino)
 	{
-		DrawGraph(block->GetPos()*BlockSize + offset, blockimg[NextBlock], true);
+		DrawGraph((block->GetPos() + HoldoffSet)*BlockSize + BoardOffset, blockimg[HoldBlock], true);
 	}
 }
 
@@ -157,7 +176,7 @@ void Player::Move()
 			for (auto block : Mino)
 			{
 				block->AddPos(VECTOR2(1, 0));
-			}
+			} 
 		}
 	}
 	if ((Key[(int)Button::left] & (~OldKey[(int)Button::left])) == 1)
@@ -192,10 +211,7 @@ void Player::Move()
 		{
 			for (auto block : Mino)
 			{
-				if (gb->PutCheck(block->GetPos() + VECTOR2(0, 1)))
-				{
-					block->AddPos(VECTOR2(0, 1));
-				}
+				block->AddPos(VECTOR2(0, 1));
 			}
 		}
 	}
@@ -219,7 +235,7 @@ void Player::Move()
 					{
 						for (auto block : Mino)
 						{
-							paeticle->Create(block->GetPos()*BlockSize + offset + BlockSize / 2, 30);
+							lpParticle.Create(block->GetPos()*BlockSize + BoardOffset + BlockSize / 2, 1);
 						}
 						block->AddPos(VECTOR2(0, 1));
 					}
@@ -236,9 +252,25 @@ void Player::Move()
 	{
 		Rotation();
 	}
-	if ((Key[(int)Button::H] & (~OldKey[(int)Button::H])) == 1)
+	if (((Key[(int)Button::H] & (~OldKey[(int)Button::H])) == 1)&& !HoldUse)
 	{
-
+		HoldUse = true;
+		if (HoldMino.begin() == HoldMino.end())
+		{
+			HoldBlock = NowBlock;
+			HoldMino = MinoSelect(NowBlock);
+			Mino = NextMino;
+			NowBlock = NextBlock;
+			NextMino = MinoSelect();
+		}
+		else
+		{
+			HoldMino = MinoSelect(NowBlock);
+			Mino = MinoSelect(HoldBlock);
+			auto block = HoldBlock;
+			HoldBlock = NowBlock;
+			NowBlock = block;
+		}
 	}
 }
 
@@ -298,19 +330,11 @@ void Player::ReSet()
 	WaitCnt = 0;
 	Mino.clear();
 	Mino = NextMino;
-	for (auto block : Mino)
-	{
-		block->AddPos(VECTOR2(-9, 0));
-	}
 	NextMino.clear();
 	NextMino = MinoSelect();
-	for (auto block : NextMino)
-	{
-		block->AddPos(VECTOR2(12, 0));
-	}
 }
 
-std::vector<std::shared_ptr<Block>> Player::MinoSelect(bool flag)
+std::vector<std::shared_ptr<Block>> Player::MinoSelect(int isRand)
 {	
 	std::vector<std::shared_ptr<Block>> seledtedMino;
 
@@ -324,9 +348,7 @@ std::vector<std::shared_ptr<Block>> Player::MinoSelect(bool flag)
 		}
 	};
 
-	(flag?NextBlock:NowBlock) = rand()%((int)MinoType::max-1);
-
-	switch ((flag ? NextBlock : NowBlock))
+	switch ((isRand==-1)?NextBlock = rand() % ((int)MinoType::max - 1) :isRand)
 	{
 	case (int)MinoType::T_mino:
 		selected({ VECTOR2(1, 1) ,VECTOR2(0, 1) ,VECTOR2(2, 1) ,VECTOR2(1, 0) });
@@ -351,6 +373,11 @@ std::vector<std::shared_ptr<Block>> Player::MinoSelect(bool flag)
 		break;
 	default:
 		break;
+	}
+
+	for (auto block : seledtedMino)
+	{
+		block->AddPos(VECTOR2(3, 0));
 	}
 	return seledtedMino;
 }

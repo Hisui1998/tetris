@@ -27,7 +27,7 @@ int GameTask::SysInit(void)
 {
 	DxLib::SetGraphMode(SCREEN_SIZE_X, SCREEN_SIZE_Y, 32);
 	DxLib::ChangeWindowMode(true);
-	DxLib::SetWindowText("1701337_ˆäã”ò::Tetrin");
+	DxLib::SetWindowText("1701337_ˆäã”ò::Tetris");
 	if (DxLib::DxLib_Init() == -1)	// DxLib‚Ì‰Šú‰»
 	{
 		return -1;

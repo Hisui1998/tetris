@@ -2,6 +2,7 @@
 #include "GameTask.h"
 
 
+// ‚¢‚Â‚à‚ÌWindow•\Ž¦
 int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 {
 	lpGameTask.Run();

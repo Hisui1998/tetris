@@ -182,6 +182,7 @@ void GameBoard::UpDate()
 	}
 }
 
+// 引数でもらった座標にブロックが置けるかどうか(ブロックの有無)を返す関数
 bool GameBoard::PutCheck(VECTOR2 pos)
 {
 	bool rtnFlag = false;

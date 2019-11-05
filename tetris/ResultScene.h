@@ -2,15 +2,13 @@
 #include "SceneState.h"
 #include <vector>
 
-// 画像生成、描画用の構造体
-struct ImgInfo
+struct Buffer
 {
-	int buff;// イメージデータ
-	VECTOR2 pos;// 座標
-	VECTOR2 vec;// 速度
+	int buff;
+	VECTOR2 pos;
+	VECTOR2 vec;
 };
 
-// リザルトシーンクラス
 class ResultScene :
 	public SceneState
 {
@@ -21,13 +19,10 @@ public:
 	int Init();
 	Scene UpDate(Scene & _this);
 private:
-	// ブロックを灰色のブロックに変えていく関数
 	void ChangeBlock(bool isEnd);
-
-	// その他変数
 	std::shared_ptr<GameBoard> gb;
-	int Cnt,y,buffnum,frame;
+	int Cnt,y,buffnum;
 	char lrKey[2][2];
 	bool isEnd,isContinue;
-	std::vector<ImgInfo> imgvec;
+	std::vector<Buffer> buff;
 };
